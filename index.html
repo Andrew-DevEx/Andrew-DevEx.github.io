@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ShelfTrack</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #18181b;
+    --surface2: #232329;
+    --border: #2e2e36;
+    --accent: #e8ff47;
+    --accent2: #47d4ff;
+    --danger: #ff5757;
+    --success: #47ffa3;
+    --text: #f0f0f0;
+    --muted: #888;
+    --radius: 6px;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,255,71,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,255,71,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .header-meta {
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+
+  /* Config panel */
+  .config-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+
+  .config-panel summary {
+    cursor: pointer;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .config-panel summary::before {
+    content: '▶';
+    font-size: 0.6rem;
+    transition: transform 0.2s;
+  }
+
+  .config-panel[open] summary::before { transform: rotate(90deg); }
+
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .config-grid .full { grid-column: 1 / -1; }
+
+  label {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type="text"]:focus, input[type="password"]:focus {
+    border-color: var(--accent);
+  }
+
+  .btn-save-config {
+    margin-top: 12px;
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+
+  .btn-save-config:hover { opacity: 0.85; }
+
+  /* Sections */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  /* Search bar */
+  .search-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .search-row input {
+    flex: 1;
+    font-size: 1rem;
+    padding: 12px 16px;
+    border-radius: var(--radius);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font-mono);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-row input:focus { border-color: var(--accent2); }
+
+  .btn {
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 12px 22px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-primary { background: var(--accent2); color: #000; }
+  .btn-checkin { background: var(--success); color: #000; }
+  .btn-checkout { background: var(--danger); color: #fff; }
+  .btn-add { background: var(--accent); color: #000; }
+  .btn-muted { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+  .btn:hover:not(:disabled) { opacity: 0.85; }
+
+  /* Result card */
+  #result-card {
+    display: none;
+    margin-top: 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .card-header {
+    background: var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .card-id {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: var(--accent);
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 99px;
+  }
+
+  .badge-in { background: rgba(71,255,163,0.15); color: var(--success); border: 1px solid var(--success); }
+  .badge-out { background: rgba(255,87,87,0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+  .card-body {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .card-field label { margin-bottom: 2px; }
+
+  .card-field .val {
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .card-actions {
+    padding: 12px 16px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .user-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .user-input-row input {
+    flex: 1;
+    font-size: 0.8rem;
+    padding: 10px 12px;
+  }
+
+  /* Add item form */
+  .add-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  /* Table */
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 8px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+  }
+
+  thead th {
+    text-align: left;
+    font-family: var(--font-head);
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(46,46,54,0.5);
+    transition: background 0.1s;
+  }
+
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  tbody td {
+    padding: 9px 12px;
+    vertical-align: middle;
+  }
+
+  .status-in { color: var(--success); font-weight: 500; }
+  .status-out { color: var(--danger); font-weight: 500; }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    font-size: 0.8rem;
+    max-width: 320px;
+    z-index: 1000;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.25s;
+    pointer-events: none;
+  }
+
+  #toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  #toast.toast-ok { border-color: var(--success); color: var(--success); }
+  #toast.toast-err { border-color: var(--danger); color: var(--danger); }
+  #toast.toast-info { border-color: var(--accent2); color: var(--accent2); }
+
+  /* Spinner */
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .status-bar {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 8px;
+    min-height: 1em;
+  }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+
+  @media (max-width: 560px) {
+    .config-grid { grid-template-columns: 1fr; }
+    .card-body { grid-template-columns: 1fr; }
+    .add-grid { grid-template-columns: 1fr 1fr; }
+    header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .logo { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">Shelf<span>Track</span></div>
+    <div class="header-meta">
+      GitHub-backed inventory<br>
+      <span id="status-connected" style="color:var(--muted)">● not configured</span>
+    </div>
+  </header>
+
+  <!-- Config -->
+  <details class="config-panel" id="config-panel">
+    <summary>GitHub Configuration</summary>
+    <div class="config-grid">
+      <div>
+        <label>GitHub Owner (username or org)</label>
+        <input type="text" id="cfg-owner" placeholder="e.g. octocat" autocomplete="off"/>
+      </div>
+      <div>
+        <label>Repository Name</label>
+        <input type="text" id="cfg-repo" placeholder="e.g. my-shelves" autocomplete="off"/>
+      </div>
+      <div>
+        <label>CSV File Path in repo</label>
+        <input type="text" id="cfg-path" placeholder="e.g. inventory.csv" autocomplete="off"/>
+      </div>
+      <div>
+        <label>Branch</label>
+        <input type="text" id="cfg-branch" placeholder="main" autocomplete="off"/>
+      </div>
+      <div class="full">
+        <label>Personal Access Token (repo scope)</label>
+        <input type="password" id="cfg-token" placeholder="ghp_..." autocomplete="off"/>
+      </div>
+    </div>
+    <button class="btn-save-config" onclick="saveConfig()">Save &amp; Load Inventory</button>
+    <div class="status-bar" id="cfg-status"></div>
+  </details>
+
+  <!-- Search -->
+  <div class="section">
+    <div class="section-title">🔍 Search Item by ID</div>
+    <div class="search-row">
+      <input type="text" id="search-input" placeholder="Enter item ID…" autocomplete="off"
+        onkeydown="if(event.key==='Enter') searchItem()"/>
+      <button class="btn btn-primary" onclick="searchItem()">Search</button>
+    </div>
+
+    <div id="result-card">
+      <div class="card-header">
+        <span class="card-id" id="r-id"></span>
+        <span class="badge" id="r-badge"></span>
+      </div>
+      <div class="card-body">
+        <div class="card-field">
+          <label>Name</label>
+          <div class="val" id="r-name"></div>
+        </div>
+        <div class="card-field">
+          <label>Shelf #</label>
+          <div class="val" id="r-shelf"></div>
+        </div>
+        <div class="card-field">
+          <label>Last User</label>
+          <div class="val" id="r-user"></div>
+        </div>
+        <div class="card-field">
+          <label>Status</label>
+          <div class="val" id="r-status"></div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <div class="user-input-row">
+          <label style="white-space:nowrap;margin:0">User:</label>
+          <input type="text" id="action-user" placeholder="Your name…"/>
+        </div>
+        <button class="btn btn-checkin" onclick="doAction('in')">✓ Check In</button>
+        <button class="btn btn-checkout" onclick="doAction('out')">↑ Check Out</button>
+      </div>
+      <div class="status-bar" style="padding:0 16px 12px" id="action-status"></div>
+    </div>
+  </div>
+
+  <!-- Add Item -->
+  <div class="section">
+    <div class="section-title">＋ Add New Item</div>
+    <div class="add-grid">
+      <div>
+        <label>ID</label>
+        <input type="text" id="new-id" placeholder="e.g. ITEM-042"/>
+      </div>
+      <div>
+        <label>Name</label>
+        <input type="text" id="new-name" placeholder="e.g. Red Binder"/>
+      </div>
+      <div>
+        <label>Shelf #</label>
+        <input type="text" id="new-shelf" placeholder="e.g. 3"/>
+      </div>
+      <div>
+        <label>Initial Status</label>
+        <input type="text" id="new-status" placeholder="in"/>
+      </div>
+      <div>
+        <label>User</label>
+        <input type="text" id="new-user" placeholder="Your name"/>
+      </div>
+    </div>
+    <button class="btn btn-add" onclick="addItem()">Add to Inventory</button>
+    <div class="status-bar" id="add-status"></div>
+  </div>
+
+  <!-- All Items -->
+  <div class="section">
+    <div class="section-title">📦 All Items</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Shelf</th>
+            <th>Status</th>
+            <th>Last User</th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody">
+          <tr><td colspan="5" style="color:var(--muted);padding:20px 12px">Configure GitHub above to load inventory.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let cfg = { owner:'', repo:'', path:'inventory.csv', branch:'main', token:'' };
+let inventory = []; // [{id, name, shelf, status, user}]
+let currentSha = null; // SHA of CSV file on GitHub
+
+// ── Config ───────────────────────────────────────────────────────────────────
+function saveConfig() {
+  cfg.owner  = document.getElementById('cfg-owner').value.trim();
+  cfg.repo   = document.getElementById('cfg-repo').value.trim();
+  cfg.path   = document.getElementById('cfg-path').value.trim() || 'inventory.csv';
+  cfg.branch = document.getElementById('cfg-branch').value.trim() || 'main';
+  cfg.token  = document.getElementById('cfg-token').value.trim();
+
+  if (!cfg.owner || !cfg.repo || !cfg.token) {
+    setStatus('cfg-status', '⚠ Owner, repo, and token are required.', 'err'); return;
+  }
+
+  localStorage.setItem('shelftrack_cfg', JSON.stringify({...cfg, token:''}));
+  setStatus('cfg-status', '<span class="spinner"></span>Loading…');
+  loadFromGitHub();
+}
+
+function loadStoredConfig() {
+  const s = localStorage.getItem('shelftrack_cfg');
+  if (!s) return;
+  const saved = JSON.parse(s);
+  document.getElementById('cfg-owner').value  = saved.owner  || '';
+  document.getElementById('cfg-repo').value   = saved.repo   || '';
+  document.getElementById('cfg-path').value   = saved.path   || 'inventory.csv';
+  document.getElementById('cfg-branch').value = saved.branch || 'main';
+  cfg = { ...cfg, ...saved };
+}
+
+// ── GitHub API ────────────────────────────────────────────────────────────────
+function ghHeaders() {
+  return { 'Authorization': `token ${cfg.token}`, 'Content-Type': 'application/json' };
+}
+
+function ghUrl(path) {
+  return `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}?ref=${cfg.branch}`;
+}
+
+async function loadFromGitHub() {
+  try {
+    const res = await fetch(ghUrl(cfg.path), { headers: ghHeaders() });
+    if (res.status === 404) {
+      // File doesn't exist — start fresh
+      inventory = [];
+      currentSha = null;
+      await pushToGitHub('Initialize inventory.csv');
+      renderTable();
+      setConnected(true);
+      setStatus('cfg-status', '✓ New inventory file created.');
+      toast('New inventory created on GitHub.', 'ok');
+      return;
+    }
+    if (!res.ok) throw new Error(`GitHub ${res.status}: ${res.statusText}`);
+    const data = await res.json();
+    currentSha = data.sha;
+    const csv = atob(data.content.replace(/\n/g, ''));
+    inventory = parseCSV(csv);
+    renderTable();
+    setConnected(true);
+    setStatus('cfg-status', `✓ Loaded ${inventory.length} item(s).`);
+    toast(`Loaded ${inventory.length} items.`, 'ok');
+    document.getElementById('config-panel').removeAttribute('open');
+  } catch (e) {
+    setConnected(false);
+    setStatus('cfg-status', '✗ ' + e.message, 'err');
+    toast(e.message, 'err');
+  }
+}
+
+async function pushToGitHub(message) {
+  const csv = serializeCSV(inventory);
+  const body = {
+    message,
+    content: btoa(unescape(encodeURIComponent(csv))),
+    branch: cfg.branch,
+  };
+  if (currentSha) body.sha = currentSha;
+
+  const res = await fetch(
+    `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path}`,
+    { method: 'PUT', headers: ghHeaders(), body: JSON.stringify(body) }
+  );
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || `GitHub ${res.status}`);
+  }
+  const data = await res.json();
+  currentSha = data.content.sha;
+}
+
+// ── CSV ───────────────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length === 0) return [];
+  // Skip header line
+  return lines.slice(1).map(line => {
+    const parts = splitCSVLine(line);
+    return { id: parts[0]||'', name: parts[1]||'', shelf: parts[2]||'', status: parts[3]||'in', user: parts[4]||'' };
+  });
+}
+
+function splitCSVLine(line) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"') { inQ = !inQ; }
+    else if (line[i] === ',' && !inQ) { result.push(cur); cur = ''; }
+    else { cur += line[i]; }
+  }
+  result.push(cur);
+  return result;
+}
+
+function csvEscape(v) {
+  v = String(v);
+  if (v.includes(',') || v.includes('"') || v.includes('\n')) return `"${v.replace(/"/g,'""')}"`;
+  return v;
+}
+
+function serializeCSV(items) {
+  const header = 'id,name,shelf,status,user';
+  const rows = items.map(i => [i.id, i.name, i.shelf, i.status, i.user].map(csvEscape).join(','));
+  return [header, ...rows].join('\n') + '\n';
+}
+
+// ── UI Helpers ────────────────────────────────────────────────────────────────
+function setConnected(ok) {
+  const el = document.getElementById('status-connected');
+  el.style.color = ok ? 'var(--success)' : 'var(--muted)';
+  el.textContent = ok
+    ? `● ${cfg.owner}/${cfg.repo}`
+    : '● not connected';
+}
+
+function setStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = msg;
+  el.style.color = type === 'err' ? 'var(--danger)' : type === 'ok' ? 'var(--success)' : 'var(--muted)';
+}
+
+let toastTimer;
+function toast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show toast-${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 3200);
+}
+
+function renderTable() {
+  const tbody = document.getElementById('items-tbody');
+  if (!inventory.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:20px 12px">No items yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = inventory.map(i => `
+    <tr>
+      <td style="color:var(--accent2);font-weight:500">${esc(i.id)}</td>
+      <td>${esc(i.name)}</td>
+      <td>${esc(i.shelf)}</td>
+      <td class="${i.status.toLowerCase()==='in'?'status-in':'status-out'}">${esc(i.status)}</td>
+      <td style="color:var(--muted)">${esc(i.user)}</td>
+    </tr>
+  `).join('');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function requireConfig() {
+  if (!cfg.token) {
+    toast('Configure GitHub settings first.', 'err'); return false;
+  }
+  return true;
+}
+
+// ── Search ────────────────────────────────────────────────────────────────────
+function searchItem() {
+  const q = document.getElementById('search-input').value.trim();
+  if (!q) return;
+  const item = inventory.find(i => i.id.toLowerCase() === q.toLowerCase());
+  const card = document.getElementById('result-card');
+  if (!item) {
+    card.style.display = 'none';
+    toast(`No item found with ID "${q}"`, 'err');
+    return;
+  }
+  document.getElementById('r-id').textContent = item.id;
+  document.getElementById('r-name').textContent = item.name;
+  document.getElementById('r-shelf').textContent = item.shelf;
+  document.getElementById('r-user').textContent = item.user || '—';
+  const isIn = item.status.toLowerCase() === 'in';
+  document.getElementById('r-status').textContent = item.status;
+  document.getElementById('r-status').className = 'val ' + (isIn ? 'status-in' : 'status-out');
+  const badge = document.getElementById('r-badge');
+  badge.textContent = isIn ? 'CHECKED IN' : 'CHECKED OUT';
+  badge.className = 'badge ' + (isIn ? 'badge-in' : 'badge-out');
+  card.style.display = 'block';
+  setStatus('action-status', '');
+}
+
+// ── Check In / Out ────────────────────────────────────────────────────────────
+async function doAction(direction) {
+  if (!requireConfig()) return;
+  const q = document.getElementById('search-input').value.trim();
+  const user = document.getElementById('action-user').value.trim();
+  if (!user) { toast('Enter your name before checking in/out.', 'err'); return; }
+
+  const idx = inventory.findIndex(i => i.id.toLowerCase() === q.toLowerCase());
+  if (idx === -1) { toast('Item not found.', 'err'); return; }
+
+  inventory[idx].status = direction === 'in' ? 'in' : 'out';
+  inventory[idx].user = user;
+
+  setStatus('action-status', '<span class="spinner"></span>Saving…');
+  try {
+    await pushToGitHub(`${direction === 'in' ? 'Check in' : 'Check out'} ${inventory[idx].id} by ${user}`);
+    renderTable();
+    searchItem(); // refresh card
+    setStatus('action-status', `✓ ${direction === 'in' ? 'Checked in' : 'Checked out'} successfully.`, 'ok');
+    toast(`${inventory[idx].id} checked ${direction}.`, 'ok');
+  } catch (e) {
+    setStatus('action-status', '✗ ' + e.message, 'err');
+    toast(e.message, 'err');
+  }
+}
+
+// ── Add Item ─────────────────────────────────────────────────────────────────
+async function addItem() {
+  if (!requireConfig()) return;
+  const id     = document.getElementById('new-id').value.trim();
+  const name   = document.getElementById('new-name').value.trim();
+  const shelf  = document.getElementById('new-shelf').value.trim();
+  const status = document.getElementById('new-status').value.trim() || 'in';
+  const user   = document.getElementById('new-user').value.trim();
+
+  if (!id || !name || !shelf) {
+    toast('ID, Name, and Shelf are required.', 'err'); return;
+  }
+  if (inventory.find(i => i.id.toLowerCase() === id.toLowerCase())) {
+    toast(`ID "${id}" already exists.`, 'err'); return;
+  }
+
+  inventory.push({ id, name, shelf, status, user });
+
+  setStatus('add-status', '<span class="spinner"></span>Saving…');
+  try {
+    await pushToGitHub(`Add item ${id}: ${name}`);
+    renderTable();
+    ['new-id','new-name','new-shelf','new-status','new-user'].forEach(f => document.getElementById(f).value = '');
+    setStatus('add-status', `✓ "${name}" added to inventory.`, 'ok');
+    toast(`"${name}" added!`, 'ok');
+  } catch (e) {
+    inventory.pop(); // rollback
+    setStatus('add-status', '✗ ' + e.message, 'err');
+    toast(e.message, 'err');
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadStoredConfig();
+</script>
+</body>
+</html>
