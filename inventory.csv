@@ -1,4 +1,4 @@
-1,2C + E 1.5mm cable V90,1,In,
+id,name,shelf,status,user
 2,9.6mm split loom tube,1,In,
 3,10m earth cable terminated in m12 lugs,1,In,
 4,16.2mm loom tube,1,In,
@@ -22,3 +22,4 @@
 23,"Bag of pressure gauges, fittings, snoop",3,In,
 24,LV rescue kit,3,In,
 25,Plug in heater,3,In,
+26,240VAC to 110VDC power supply pelican case,4,In,
