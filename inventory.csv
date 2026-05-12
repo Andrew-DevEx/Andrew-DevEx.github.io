@@ -2,5 +2,5 @@ id,name,shelf,status,user
 ITEM-001,Red Binder,1,in,Andrew
 ITEM-002,Blue Folder,1,out,Bob
 ITEM-003,Stapler,2,in,Alice
-ITEM-004,Tape Dispenser,3,out,Ty
+ITEM-004,Tape Dispenser,3,in,Ty
 ITEM-005,Hole Punch,2,in,
