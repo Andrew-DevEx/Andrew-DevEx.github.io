@@ -41,3 +41,4 @@ id,name,shelf,status,user
 41,Usb to serial converters,5,In,
 43,Hirschmann RS2-4TX/1FX network switch,5,In,
 44,Emerson 475 HART communicator,5,In,
+45,MOXA EDR-G902-T NAT router,5,In,
